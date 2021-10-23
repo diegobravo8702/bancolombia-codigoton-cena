@@ -28,5 +28,8 @@ la api se encuentra versionada. Buena practica en caso de sufrir cambios futuros
 POST
 http://{{HOST}}:{{PORT}}/codigoton/api/v1/organizacion
 
+# Entities
+el mapeo de valores de dinero lo realizo contra Objetos BigDecimal en java, usar Double podria traer errores de presicion dado que los calculos se realizan sobre datos binarios.
+
 
 

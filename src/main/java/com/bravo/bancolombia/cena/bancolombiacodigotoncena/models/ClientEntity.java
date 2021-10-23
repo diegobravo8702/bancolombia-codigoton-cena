@@ -1,7 +1,5 @@
 package com.bravo.bancolombia.cena.bancolombiacodigotoncena.models;
 
-import java.math.BigDecimal;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,19 +11,30 @@ import lombok.Data;
 import lombok.ToString;
 
 @Entity
-@Table(name = "account")
+@Table(name = "client")
 @Data
-@ToString(includeFieldNames=true)
-public class AccountEntity {
+@ToString(includeFieldNames = true)
+public class ClientEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(unique = true, nullable = false)
 	private Integer id;
 
-	@Column(name = "client_id", nullable = false)
-	private String clientId;
+	@Column
+	private String code;
 
-	@Column(nullable = false)
-	private BigDecimal balance;
+	@Column
+	private Short male;
+
+	@Column
+	private Integer type;
+
+	@Column
+	private String company;
 	
+	@Column
+	private String location;
+
+	@Column
+	private Short encrypt;
 }
