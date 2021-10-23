@@ -1,0 +1,15 @@
+version: '3'
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    volumes:
+      - mydb-db:/var/lib/mysql
+    env_file: 
+      - variables.env
+volumes:
+  mydb-db:
