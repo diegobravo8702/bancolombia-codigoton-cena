@@ -23,3 +23,10 @@ Maven
 MariaDB
 Swagger
 
+# URL Api 
+la api se encuentra versionada. Buena practica en caso de sufrir cambios futuros
+POST
+http://{{HOST}}:{{PORT}}/codigoton/api/v1/organizacion
+
+
+
