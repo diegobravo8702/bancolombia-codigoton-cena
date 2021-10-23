@@ -11,3 +11,15 @@ las credenciales se ingresan en el archivo variables.env
 Se corre el script bd.sql que se encuentra en la carpeta especificacion 
 
 para levantar el proyecto basta con un docker-compose up -d
+
+# definicion de arquitectura
+
+La aplicacion se expondra en cloud como api.
+
+GCloud
+SpringBoot
+OpenJDK 8
+Maven
+MariaDB
+Swagger
+
