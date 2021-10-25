@@ -1,8 +1,8 @@
-package com.bravo.bancolombia.cena.bancolombiacodigotoncena.repositories;
+package com.bravo.bancolombia.cena.repositories;
 
 import java.util.List;
 
-import com.bravo.bancolombia.cena.bancolombiacodigotoncena.models.AccountEntity;
+import com.bravo.bancolombia.cena.models.AccountEntity;
 
 public interface AccountReadOnlyRepository extends ReadOnlyRepository<AccountEntity, Integer> {
 	List<AccountEntity> findByClientId(Integer clientId);

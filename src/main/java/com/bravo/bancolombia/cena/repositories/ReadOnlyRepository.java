@@ -1,4 +1,4 @@
-package com.bravo.bancolombia.cena.bancolombiacodigotoncena.repositories;
+package com.bravo.bancolombia.cena.repositories;
 
 import java.util.List;
 import java.util.Optional;
