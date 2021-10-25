@@ -170,11 +170,11 @@ public class CenaService {
 			}
 
 			// Ya se ha poblado los codigos, se procede con los ordenamientos
-			// Ordenamiento 1: por codigo. DESCENDENTE
+			// Ordenamiento 1: por codigo. ASCENDENTE
 			Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
 				@Override
 				public int compare(ClientEntity c1, ClientEntity c2) {
-					return c2.getCodeDecript().compareTo(c1.getCodeDecript());
+					return c1.getCodeDecript().compareTo(c2.getCodeDecript());
 				}
 			});
 
@@ -188,8 +188,6 @@ public class CenaService {
 
 			// ya ordenados se procede con la seleccion de la mesa
 
-			int hombresEncontrados = 0;
-			int mujeresEncontradas = 0;
 			int requisitoPorSexo[] = { 0, 0 };
 			ArrayList<String> empresasInvitadas = new ArrayList<String>();
 			// ciclo buscando los candidatos
