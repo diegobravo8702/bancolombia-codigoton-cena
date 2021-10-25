@@ -79,8 +79,10 @@ Los filtros de RI y RF los ejecuta la app.
 6. al finalizar la mesa se evalua la cantidad de hombres y mujeres, en caso de haber diferencias, se elimina la cantidad excedente del genero correspondiente.
 
 # MIS DUDAS O TEMAS PENDIENTES
-## El ordenamiento por monto de balance y cuenta. ¿las dos son de mayor a menor?
+## [ACLARADA] El ordenamiento por monto de balance y cuenta. ¿las dos son de mayor a menor?
 Yo puse que los dos casos son de mayor a menor
+####Aclaración: Solicité aclaracion por correo a la organización y me dicen que el ordenamiento de mayor a menor aplica solamente para la suma del monto, el orden de codigo se realizara de menor a mayor. Esto impacta el orden de los invitados de la mesa 5. Ya he actualizado mis resultados.
+
 ## ¿Los valores de rangos eran inclusivos o exclusivos?
 puse que fueran exclusivos
 ## Si una persona ya fue invitada a una mesa, ¿no debe ser tenida en cuenta para otras mesas?
@@ -102,7 +104,7 @@ CANCELADA
 <Mesa 4>
 CANCELADA
 <Mesa 5>
-C10208,C10207,C10206,C10205,C10204,C10203,C10202,C10201
+C10201,C10202,C10203,C10204,C10205,C10206,C10207,C10208
 <Mesa 6>
 C10186,C10116,C10088,C10169,C10209,C10178
 ```
