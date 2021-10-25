@@ -40,8 +40,6 @@ public class CenaService {
 		logger.info("getOrganizacion() ");
 		List<MesaDto> mesas = new ArrayList<MesaDto>();
 		MesaDto mesaActual = new MesaDto();
-		// List<AccountEntity> cuentas = cuenta.findAll();
-		// List<ClientEntity> clientes = cliente.findAll();
 
 		StringTokenizer lineas = new StringTokenizer(contenido, "\n");
 
@@ -57,20 +55,7 @@ public class CenaService {
 			}
 		}
 
-		logger.info("Cantidad de mesas: " + mesas.size());
-
-		poblarCandidatos(mesas);
-
-		StringBuilder resultado = new StringBuilder();
-//		for (AccountEntity cuenta : cuentas) {
-//			resultado.append(cuenta.toString());
-//			resultado.append("\n");
-//		}
-//		for (ClientEntity cliente : clientes) {
-//			resultado.append(cliente.toString());
-//			resultado.append("\n");
-//		}
-		return resultado.toString();
+		return procesarCandidatos(mesas);
 	}
 
 	private boolean esMesa(String texto) {
@@ -88,13 +73,13 @@ public class CenaService {
 
 	}
 
-	private void poblarCandidatos(List<MesaDto> mesas) {
+	private String procesarCandidatos(List<MesaDto> mesas) {
 		logger.info("poblarCandidatos");
 
 		// TODO: asumo que se debe hacer esta validacion: un invitado de una mesa no debe ser evaluado en posteriores mesas
 		// candidatos en mesas anteriores para ser excluidos de las nuevas mesas
 
-		ArrayList<ClientEntity> candidatosConfirmados = new ArrayList<ClientEntity>();
+		ArrayList<ClientEntity> candidatosConfirmadosCena = new ArrayList<ClientEntity>();
 		// ArrayList<ClientEntity> candidatosConfirmados = (ArrayList<ClientEntity>) cliente.findByCode("C10001");
 
 		// Con cada una de las restricciones se va excluyendo candidatos que no cumplan con el criterio
@@ -106,27 +91,11 @@ public class CenaService {
 			ArrayList<ClientEntity> candidatosInicialesPorMesa = (ArrayList<ClientEntity>) cliente.findAll();
 			ArrayList<ClientEntity> candidatosAptosPorFiltro = null;
 
-			logger.info("poblarCandidatos - ANTES DE APLICAR EL FILTRO LOS CANDIDATOS SON: [" + candidatosInicialesPorMesa.size() + "]");
-//			for (ClientEntity candidato : candidatosInicialesPorMesa) {
-//				logger.info(candidato.toString());
-//			}
-			/*
-			 * // --- quitar desde aqui for (ClientEntity candidato : candidatosInicialesPorMesa) { if (candidato.getEncrypt() == ENCRIPTADO) { candidato.setCodeDecript(Decrypt.decrypt(candidato.getCode())); }
-			 * else { candidato.setCodeDecript(candidato.getCode()); } } Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
-			 * 
-			 * @Override public int compare(ClientEntity c1, ClientEntity c2) { return c1.getCodeDecript().compareTo(c2.getCodeDecript()); } });
-			 * 
-			 * logger.info("poblarCandidatos - ORDENADOS: [" + candidatosInicialesPorMesa.size() + "]"); for (ClientEntity candidato : candidatosInicialesPorMesa) { logger.info(candidato.toString()); } // ---
-			 * quitar hasta aqui
-			 */
-
 			// Se excluyen candidatos ya confirmados en otras mesas
 			int cantidadCandidatosPorMesaAntesDeExcluir = candidatosInicialesPorMesa.size();
-			candidatosInicialesPorMesa.removeIf(c -> (candidatosConfirmados.contains(c)));
+			candidatosInicialesPorMesa.removeIf(c -> (candidatosConfirmadosCena.contains(c)));
 			if (cantidadCandidatosPorMesaAntesDeExcluir != candidatosInicialesPorMesa.size()) {
-				logger.info("###########################################");
 				logger.info("########################################### - Excluidos porque ya se habian confirmado en otra mesa");
-				logger.info("###########################################");
 			}
 
 			logger.info("poblarCandidatos - DESPUES DE ExCLUIR LOS CANDIDATOS CONFIRMADOS: [" + candidatosInicialesPorMesa.size() + "]");
@@ -201,11 +170,11 @@ public class CenaService {
 			}
 
 			// Ya se ha poblado los codigos, se procede con los ordenamientos
-			// Ordenamiento 1: por codigo. ASCENDENTE
+			// Ordenamiento 1: por codigo. DESCENDENTE
 			Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
 				@Override
 				public int compare(ClientEntity c1, ClientEntity c2) {
-					return c1.getCodeDecript().compareTo(c2.getCodeDecript());
+					return c2.getCodeDecript().compareTo(c1.getCodeDecript());
 				}
 			});
 
@@ -223,7 +192,7 @@ public class CenaService {
 			int mujeresEncontradas = 0;
 			int requisitoPorSexo[] = { 0, 0 };
 			ArrayList<String> empresasInvitadas = new ArrayList<String>();
-			// ciclo buscando kos candidatos
+			// ciclo buscando los candidatos
 			boolean busquedaCompletada = false;
 			while (!busquedaCompletada) {
 				// validacion: si aun hay candidatos por evaluar
@@ -247,26 +216,101 @@ public class CenaService {
 				int cantidadCandidatosPorMesaAntesDeExcluir_2 = candidatosInicialesPorMesa.size();
 				candidatosInicialesPorMesa.removeIf(c -> (c.getCompany().equalsIgnoreCase(candidato.getCompany())));
 				if (cantidadCandidatosPorMesaAntesDeExcluir_2 != candidatosInicialesPorMesa.size()) {
-					logger.info("###########################################");
 					logger.info("########################################### - Excluidos porque pertenecen a la misma empresa");
-					logger.info("###########################################");
 				}
 
-				// se confirma al candidato como invitado
+				// se registra el nuevo invitado en el contador de candidatos por genero
 				requisitoPorSexo[candidato.getMale()]++;
+				// se confirma al candidato como invitado en la mesa
 				mesa.getInvitados().add(candidato);
+				// se confirma al candidato como invitado a la cena
+				candidatosConfirmadosCena.add(candidato);
 
 			}
 
-			logger.info("### MESA COMPLETADA");
-			logger.info("### MESA COMPLETADA");
-			logger.info("### MESA COMPLETADA");
+			// Se ha completado el proceso, de invitados, Se requiere validar si la cantidad de hombres y mujeres fue la misma
+			// Si la cantidad de hombres y mujeres es distinta se eliminan de los invitados la cantidad de integrantes del sexo opuesto faltantes
+
+			int diferencia = requisitoPorSexo[HOMBRE] - requisitoPorSexo[MUJER];
+			logger.info("         ***   diferencia: " + diferencia);
+			ArrayList<ClientEntity> candidatosPorCancelar = new ArrayList<ClientEntity>();
+			short sexoPorEliminar = -1;
+			if (diferencia < 0) {
+				sexoPorEliminar = MUJER;
+			} else if (diferencia > 0) {
+				sexoPorEliminar = HOMBRE;
+			}
+			diferencia = Math.abs(diferencia);
+			if (diferencia != 0) {
+				// Se procede a seleccionar a los que seran desinvitados
+				logger.info("Se procede a eliminar o desinvitar a [" + diferencia + "]");
+
+				// La evaluacion de la posicion es en orden inverso.
+				// se guarda la posicion del eliminado mas reciente para que el la siguiente iteracion se comience desde un indice anterior.
+				// en la primera iteracion no se ha eliminado a nadie por lo que se comienza desde el ultimo
+				int posicionEliminadoAnterior = mesa.getInvitados().size() - 1;
+				for (int cantidad = 0; cantidad < diferencia; cantidad++) {
+					// cada iteracion es una eliminacion
+
+					for (int posicion = posicionEliminadoAnterior; posicion > 0; posicion--) {
+						// cada iteracion es un invitado evaluandose para ser eliminado
+						// se itera en orden inverso para excluir primero a los de balance mas bajo
+						ClientEntity invitadoEvaluado = mesa.getInvitados().get(posicion);
+						if (invitadoEvaluado.getMale() == sexoPorEliminar) {
+							// Encontrado el invitado que será desinvitado jeje
+							logger.info("Se desinvitara a " + invitadoEvaluado.toString());
+							candidatosPorCancelar.add(invitadoEvaluado);
+							// dado que si se encontro a quien eliminar, se actualiza la posicion para siguietnes iteraciones
+							posicionEliminadoAnterior = posicion;
+							// se finaliza el ciclo
+
+							break;
+
+						}
+					}
+				}
+			}
+
+			// ya se sabe quien sera desinvitado
+			for (ClientEntity candidato : candidatosPorCancelar) {
+				// Se elimina de la mesa
+				mesa.getInvitados().remove(candidato);
+				// Se elimina de los invitados confirmados para que pueda ser invitado a otra mesa
+
+			}
+
 			logger.info("### MESA COMPLETADA");
 			for (ClientEntity invitado : mesa.getInvitados()) {
 				logger.info("### MESA COMPLETADA - invitado: " + invitado);
 			}
 
 		}
+
+		logger.info("Resultado final: ");
+		StringBuilder resultadoFinal = new StringBuilder();
+
+		for (MesaDto mesa : mesas) {
+			resultadoFinal.append(mesa.getNombre() + "\n");
+			if (mesa.getInvitados().size() < 4) {
+				resultadoFinal.append("CANCELADA");
+			} else {
+				boolean primero = true;
+				for (ClientEntity invitado : mesa.getInvitados()) {
+					if (primero) {
+						primero = false;
+						resultadoFinal.append(invitado.getCodeDecript());
+						// resultadoFinal.append("" + (invitado.getMale() == HOMBRE ? "h" : "m") + invitado.getCodeDecript());
+					} else {
+						resultadoFinal.append("," + invitado.getCodeDecript());
+						// resultadoFinal.append("," + (invitado.getMale() == HOMBRE ? "h" : "m") + invitado.getCodeDecript());
+					}
+				}
+			}
+			resultadoFinal.append("\n");
+
+		}
+		logger.info(resultadoFinal.toString());
+		return resultadoFinal.toString();
 
 	}
 
