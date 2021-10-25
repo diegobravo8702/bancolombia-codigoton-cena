@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bravo.bancolombia.cena.crypt.Decrypt;
 import com.bravo.bancolombia.cena.dtos.FiltroDto;
 import com.bravo.bancolombia.cena.dtos.MesaDto;
 import com.bravo.bancolombia.cena.models.ClientEntity;
@@ -25,6 +26,9 @@ import com.bravo.bancolombia.cena.repositories.ClientReadOnlyRepository;
 public class CenaService {
 
 	private static final Logger logger = LoggerFactory.getLogger(CenaService.class);
+	private static short ENCRIPTADO = 1;
+	private static short HOMBRE = 1;
+	private static short MUJER = 0;
 
 	@Autowired
 	AccountReadOnlyRepository cuenta;
@@ -103,28 +107,32 @@ public class CenaService {
 			ArrayList<ClientEntity> candidatosAptosPorFiltro = null;
 
 			logger.info("poblarCandidatos - ANTES DE APLICAR EL FILTRO LOS CANDIDATOS SON: [" + candidatosInicialesPorMesa.size() + "]");
-			for (ClientEntity candidato : candidatosInicialesPorMesa) {
-				logger.info(candidato.toString());
-			}
-
-			logger.info("poblarCandidatos - ORDENADOS: [" + candidatosInicialesPorMesa.size() + "]");
-			for (ClientEntity candidato : candidatosInicialesPorMesa) {
-				logger.info(candidato.toString());
-			}
+//			for (ClientEntity candidato : candidatosInicialesPorMesa) {
+//				logger.info(candidato.toString());
+//			}
+			/*
+			 * // --- quitar desde aqui for (ClientEntity candidato : candidatosInicialesPorMesa) { if (candidato.getEncrypt() == ENCRIPTADO) { candidato.setCodeDecript(Decrypt.decrypt(candidato.getCode())); }
+			 * else { candidato.setCodeDecript(candidato.getCode()); } } Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
+			 * 
+			 * @Override public int compare(ClientEntity c1, ClientEntity c2) { return c1.getCodeDecript().compareTo(c2.getCodeDecript()); } });
+			 * 
+			 * logger.info("poblarCandidatos - ORDENADOS: [" + candidatosInicialesPorMesa.size() + "]"); for (ClientEntity candidato : candidatosInicialesPorMesa) { logger.info(candidato.toString()); } // ---
+			 * quitar hasta aqui
+			 */
 
 			// Se excluyen candidatos ya confirmados en otras mesas
-			int cantidadCantidatosPorMesaAntesDeExcluir = candidatosInicialesPorMesa.size();
+			int cantidadCandidatosPorMesaAntesDeExcluir = candidatosInicialesPorMesa.size();
 			candidatosInicialesPorMesa.removeIf(c -> (candidatosConfirmados.contains(c)));
-			if (cantidadCantidatosPorMesaAntesDeExcluir != candidatosInicialesPorMesa.size()) {
+			if (cantidadCandidatosPorMesaAntesDeExcluir != candidatosInicialesPorMesa.size()) {
 				logger.info("###########################################");
 				logger.info("########################################### - Excluidos porque ya se habian confirmado en otra mesa");
 				logger.info("###########################################");
 			}
 
 			logger.info("poblarCandidatos - DESPUES DE ExCLUIR LOS CANDIDATOS CONFIRMADOS: [" + candidatosInicialesPorMesa.size() + "]");
-			for (ClientEntity candidato : candidatosInicialesPorMesa) {
-				logger.info(candidato.toString());
-			}
+//			for (ClientEntity candidato : candidatosInicialesPorMesa) {
+//				logger.info(candidato.toString());
+//			}
 
 			for (FiltroDto restriccion : mesa.getFiltros()) {
 				logger.info("poblarCandidatos - mesa - " + mesa.getNombre() + " - restriccion - " + restriccion.getCodigo() + " : " + restriccion.getValor());
@@ -173,29 +181,91 @@ public class CenaService {
 
 				}
 				logger.info("poblarCandidatos - mesa - " + mesa.getNombre() + " - restriccion - " + restriccion.getCodigo() + " : " + restriccion.getValor() + " DESPUES DE APLICAR EL FILTRO LOS CANDIDATOS SON: [" + candidatosInicialesPorMesa.size() + "]");
-				for (ClientEntity candidato : candidatosInicialesPorMesa) {
-					logger.info(candidato.toString());
-				}
+//				for (ClientEntity candidato : candidatosInicialesPorMesa) {
+//					logger.info(candidato.toString());
+//				}
 
 			}
 
-			// Logica de ordenamiento: 
-			// La espedificacion infica que se ordena por balance y en caso de empate se ordena por codigo
-			// en este caso ordenare proimero por codigo y despues se ordena por balance
-			// es posible quye haya acodigos encriptados por lo que se evalua si alguno de los registros contiene el codigo encriptado y se procede a desencriptar
-			
-			
-			
-			// ya se han excluido los clientes por filtros ahora se debe ordenar por monto de balance
+			// Logica de ordenamiento:
+			// es posible quye haya codigos encriptados por lo que se evalua si alguno de los registros contiene el codigo encriptado y se procede a desencriptar
+			// La espedificacion indica que se ordena por balance y en caso de empate se ordena por codigo
+			// en este caso ordenare primero por codigo y despues se ordena por balance
+
+			for (ClientEntity candidato : candidatosInicialesPorMesa) {
+				if (candidato.getEncrypt() == ENCRIPTADO) {
+					candidato.setCodeDecript(Decrypt.decrypt(candidato.getCode()));
+				} else {
+					candidato.setCodeDecript(candidato.getCode());
+				}
+			}
+
+			// Ya se ha poblado los codigos, se procede con los ordenamientos
+			// Ordenamiento 1: por codigo. ASCENDENTE
+			Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
+				@Override
+				public int compare(ClientEntity c1, ClientEntity c2) {
+					return c1.getCodeDecript().compareTo(c2.getCodeDecript());
+				}
+			});
+
+			// Ordenamiento 2: por sma total de balance. DESCENDENTE
 			Collections.sort(candidatosInicialesPorMesa, new Comparator<ClientEntity>() {
 				@Override
 				public int compare(ClientEntity c1, ClientEntity c2) {
 					return c2.getBalance().compareTo(c1.getBalance());
 				}
 			});
-			
+
 			// ya ordenados se procede con la seleccion de la mesa
-			
+
+			int hombresEncontrados = 0;
+			int mujeresEncontradas = 0;
+			int requisitoPorSexo[] = { 0, 0 };
+			ArrayList<String> empresasInvitadas = new ArrayList<String>();
+			// ciclo buscando kos candidatos
+			boolean busquedaCompletada = false;
+			while (!busquedaCompletada) {
+				// validacion: si aun hay candidatos por evaluar
+				if (candidatosInicialesPorMesa.isEmpty()) {
+					logger.info("ya no hay nadie mas por evaluar");
+					busquedaCompletada = true;
+					continue;
+				}
+
+				ClientEntity candidato = candidatosInicialesPorMesa.get(0);
+				candidatosInicialesPorMesa.remove(0);
+				logger.info("candidato evaluado: " + candidato.toString());
+
+				// validacion: si el candidato es apto por la cuota de sexo
+				if (requisitoPorSexo[candidato.getMale()] >= 4) {
+					logger.info("descartado por sexo");
+					continue;
+				}
+
+				// Se elimina de la lista de candidatos aquellos que pertenecen a la misma empresa
+				int cantidadCandidatosPorMesaAntesDeExcluir_2 = candidatosInicialesPorMesa.size();
+				candidatosInicialesPorMesa.removeIf(c -> (c.getCompany().equalsIgnoreCase(candidato.getCompany())));
+				if (cantidadCandidatosPorMesaAntesDeExcluir_2 != candidatosInicialesPorMesa.size()) {
+					logger.info("###########################################");
+					logger.info("########################################### - Excluidos porque pertenecen a la misma empresa");
+					logger.info("###########################################");
+				}
+
+				// se confirma al candidato como invitado
+				requisitoPorSexo[candidato.getMale()]++;
+				mesa.getInvitados().add(candidato);
+
+			}
+
+			logger.info("### MESA COMPLETADA");
+			logger.info("### MESA COMPLETADA");
+			logger.info("### MESA COMPLETADA");
+			logger.info("### MESA COMPLETADA");
+			for (ClientEntity invitado : mesa.getInvitados()) {
+				logger.info("### MESA COMPLETADA - invitado: " + invitado);
+			}
+
 		}
 
 	}

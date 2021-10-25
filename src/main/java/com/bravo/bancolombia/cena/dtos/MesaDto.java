@@ -3,15 +3,17 @@ package com.bravo.bancolombia.cena.dtos;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bravo.bancolombia.cena.models.ClientEntity;
+
 public class MesaDto {
 	private String nombre;
 	private List<FiltroDto> filtros;
-	private List<String> invitados;
+	private List<ClientEntity> invitados;
 
 	public MesaDto() {
 		this.nombre = "UNDEFINED";
 		this.filtros = new ArrayList<FiltroDto>();
-		this.invitados = new ArrayList<String>();
+		this.invitados = new ArrayList<ClientEntity>();
 	}
 
 	public String getNombre() {
@@ -30,11 +32,11 @@ public class MesaDto {
 		this.filtros = filtros;
 	}
 
-	public List<String> getInvitados() {
+	public List<ClientEntity> getInvitados() {
 		return invitados;
 	}
 
-	public void setInvitados(List<String> invitados) {
+	public void setInvitados(List<ClientEntity> invitados) {
 		this.invitados = invitados;
 	}
 

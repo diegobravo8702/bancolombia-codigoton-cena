@@ -54,3 +54,14 @@ Los filtros de RI y RF los ejecuta la app.
 - En caso de tener filtro de RF se excluye los que no cumplan este criterio.
 3. descifrar codigos
 - Si alguno de los candidatos tiene codigo cifrado, se descifra
+4. Ordenamientos
+- Se ordena los candidatos, primero por codigo.
+- Se ordena los candidatos, despues por monto. quedando este como el orden principal.
+5. Seleccion por sexo:
+-- Si aun hay lugar para alguien de su sexo.
+-- Se confirma al candidato como invitado.
+-- Se excluye de la lista de candidatos.
+-- Se excluye a todos los demas candidatos que pertenezcan a su misma empresa.
+
+
+  
